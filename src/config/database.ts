@@ -1,43 +1,17 @@
 import mongoose from "mongoose";
 
-interface ConnectionOptions {
-  useNewUrlParser?: boolean;
-  useUnifiedTopology?: boolean;
-}
-
 const connectDB = async (): Promise<void> => {
   try {
     // MongoDB connection string
     const mongoUri =
       process.env.MONGODB_URI || "mongodb://localhost:27017/sundoritto";
 
-    
-
-    console.log("📦 Connecting to MongoDB...");
-    const conn = await mongoose.connect(mongoUri );
-
-    console.log(`📦 MongoDB Connected Successfully!`);
-    console.log(`🔗 Host: ${conn.connection.host}`);
-    console.log(`🗃️  Database: ${conn.connection.name}`);
-
-    // Connection event listeners
-    mongoose.connection.on("error", (err: Error) => {
-      console.error("❌ MongoDB connection error:", err.message);
-    });
-
-    mongoose.connection.on("disconnected", () => {
-      console.log("📦 MongoDB disconnected");
-    });
-
-    mongoose.connection.on("reconnected", () => {
-      console.log("📦 MongoDB reconnected");
-    });
+    const conn = await mongoose.connect(mongoUri);
 
     // Graceful shutdown
     const gracefulShutdown = async (signal: string) => {
       console.log(`📦 ${signal} received. Closing MongoDB connection...`);
       await mongoose.connection.close();
-      console.log("📦 MongoDB connection closed.");
     };
 
     process.on("SIGINT", () => gracefulShutdown("SIGINT"));

@@ -16,7 +16,7 @@ process.on("uncaughtException", (err: Error) => {
   process.exit(1);
 });
 
-const PORT: number = parseInt(process.env.PORT || "5000", 10);
+const PORT: number = parseInt(process.env.PORT || "4000", 10);
 
 const server = app.listen(PORT, () => {
   console.log(`🚀 Sundoritto Server running on port ${PORT}`);
