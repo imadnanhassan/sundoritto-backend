@@ -4,6 +4,8 @@ import helmet from "helmet";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
+import os from "os";
+import { StatusCodes } from "http-status-codes";
 
 // ----------------- App Init -----------------
 const app: Express = express();
@@ -53,6 +55,36 @@ app.use(
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
+// ----------------- Test Api -----------------
+app.get("/", (req: Request, res: Response, next: NextFunction) => {
+  const currentDateTime = new Date().toISOString();
+  const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  const serverHostname = os.hostname();
+  const serverPlatform = os.platform();
+  const serverUptime = os.uptime();
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: "Welcome to the Sundoritto Server!",
+    version: "1.0.0",
+    clientDetails: {
+      ipAddress: clientIp,
+      accessedAt: currentDateTime,
+    },
+    serverDetails: {
+      hostname: serverHostname,
+      platform: serverPlatform,
+      uptime: `${Math.floor(serverUptime / 60 / 60)} hours ${Math.floor(
+        (serverUptime / 60) % 60
+      )} minutes`,
+    },
+    developerContact: {
+      email: "developers@sundoritto.com",
+      website: "https://sundoritto.com",
+    },
+  });
+});
+
 // ----------------- Health Check -----------------
 app.get("/api/health", (req: Request, res: Response) => {
   res.status(200).json({
@@ -67,9 +99,6 @@ app.get("/api/health", (req: Request, res: Response) => {
 });
 
 // ----------------- Routes -----------------
-// app.use("/api/auth", authRoutes);
-// app.use("/api/products", productRoutes);
-// app.use("/api/orders", orderRoutes);
 
 // ----------------- 404 Handler -----------------
 const notFound = (req: Request, res: Response, next: NextFunction) => {
