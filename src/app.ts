@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import os from "os";
 import { StatusCodes } from "http-status-codes";
+import router from "./routes";
 
 // ----------------- App Init -----------------
 const app: Express = express();
@@ -99,6 +100,8 @@ app.get("/api/health", (req: Request, res: Response) => {
 });
 
 // ----------------- Routes -----------------
+
+app.use("/api/v1", router);
 
 // ----------------- 404 Handler -----------------
 const notFound = (req: Request, res: Response, next: NextFunction) => {
