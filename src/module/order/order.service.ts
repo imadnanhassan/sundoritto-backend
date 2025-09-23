@@ -8,13 +8,17 @@ import { IJwtPayload } from "../auth/auth.interface";
 import { Types } from "mongoose";
 import { OrderStatus } from "../../enum/order.enum";
 
-const getEffectiveUnitPrice = (p: any): number {
+const getEffectiveUnitPrice = (p: any): number => {
   // If active flash deal with dealPrice, use it; otherwise apply discount if any
   const now = new Date();
   if (p.isFlashDeal && p.flashDeal?.startAt && p.flashDeal?.endAt) {
     const start = new Date(p.flashDeal.startAt);
     const end = new Date(p.flashDeal.endAt);
-    if (start <= now && now <= end && typeof p.flashDeal.dealPrice === "number") {
+    if (
+      start <= now &&
+      now <= end &&
+      typeof p.flashDeal.dealPrice === "number"
+    ) {
       return p.flashDeal.dealPrice;
     }
   }
@@ -26,9 +30,13 @@ const getEffectiveUnitPrice = (p: any): number {
     }
   }
   return p.price;
-}
+};
 
-const computeShippingForItem = (p: any, quantity: number, location?: string): number => {
+const computeShippingForItem = (
+  p: any,
+  quantity: number,
+  location?: string
+): number => {
   if (p.shipping?.type === ShippingType.FREE) {
     return 0;
   }
@@ -39,7 +47,9 @@ const computeShippingForItem = (p: any, quantity: number, location?: string): nu
         "Shipping location is required for location based shipping"
       );
     }
-    const entry = (p.shipping.locations || []).find((l: any) => l.location?.toLowerCase() === location.toLowerCase());
+    const entry = (p.shipping.locations || []).find(
+      (l: any) => l.location?.toLowerCase() === location.toLowerCase()
+    );
     if (!entry) {
       throw new AppError(
         StatusCodes.BAD_REQUEST,
@@ -54,7 +64,13 @@ const computeShippingForItem = (p: any, quantity: number, location?: string): nu
 const checkout = async (
   payload: {
     items: { productId: string; quantity: number }[];
-    customer: { name: string; email?: string | null; phone: string; fullAddress: string; note?: string | null };
+    customer: {
+      name: string;
+      email?: string | null;
+      phone: string;
+      fullAddress: string;
+      note?: string | null;
+    };
     shippingLocation?: string;
     paymentMethod: "cod";
   },
@@ -68,9 +84,12 @@ const checkout = async (
   let subtotal = 0;
   let shippingCost = 0;
   const orderItems = payload.items.map((it) => {
-    const p = products.find((pp) => pp._id.toString() === it.productId);
+    const p = products.find((pp) => String((pp as any)._id) === it.productId);
     if (!p) {
-      throw new AppError(StatusCodes.NOT_FOUND, "One or more products not found");
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        "One or more products not found"
+      );
     }
 
     // Voucher rule: if voucherBalance > 0, product must have free delivery
@@ -92,7 +111,11 @@ const checkout = async (
     const unitPrice = getEffectiveUnitPrice(p as any);
     const totalPrice = unitPrice * it.quantity;
     subtotal += totalPrice;
-    shippingCost += computeShippingForItem(p, it.quantity, payload.shippingLocation);
+    shippingCost += computeShippingForItem(
+      p,
+      it.quantity,
+      payload.shippingLocation
+    );
 
     return {
       product: p._id,
@@ -144,7 +167,9 @@ const checkout = async (
 
   // email to admin and (if available) customer with HTML/PDF
   const { sendMail } = await import("../../config/mailer");
-  const { orderAdminHtml, orderCustomerHtml } = await import("../../utils/emailTemplates");
+  const { orderAdminHtml, orderCustomerHtml } = await import(
+    "../../utils/emailTemplates"
+  );
   const { generateOrderInvoiceBuffer } = await import("../../utils/pdf");
   const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
 
@@ -180,7 +205,9 @@ const checkout = async (
 };
 
 const myOrders = async (authUser: IJwtPayload) => {
-  return await Order.find({ user: new Types.ObjectId(authUser.userId) }).sort({ createdAt: -1 });
+  return await Order.find({ user: new Types.ObjectId(authUser.userId) }).sort({
+    createdAt: -1,
+  });
 };
 
 const listOrders = async () => {
@@ -199,7 +226,9 @@ const updateOrderStatus = async (id: string, status: OrderStatus) => {
   if (custEmail) {
     try {
       const { sendMail } = await import("../../config/mailer");
-      const { orderStatusCustomerHtml } = await import("../../utils/emailTemplates");
+      const { orderStatusCustomerHtml } = await import(
+        "../../utils/emailTemplates"
+      );
       const lang = (process.env.DEFAULT_LANG as "en" | "bn") || "en";
       // map enum to template key
       const key =
@@ -226,17 +255,23 @@ const cancelOrder = async (id: string) => {
   const order = await Order.findById(id);
   if (!order) throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
   if (order.status === OrderStatus.DELIVERED) {
-    throw new AppError(StatusCodes.BAD_REQUEST, "Cannot cancel a delivered order");
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      "Cannot cancel a delivered order"
+    );
   }
   // restock
   for (const it of order.items) {
-    await ProductModel.updateOne({ _id: it.product }, { $inc: { stock: it.quantity } });
+    await ProductModel.updateOne(
+      { _id: it.product },
+      { $inc: { stock: it.quantity } }
+    );
     await InventoryService.recordMovement({
       productId: it.product,
       type: InventoryMovementType.IN,
       quantity: it.quantity,
       reason: "Order canceled - restock",
-      orderId: order._id,
+      orderId: order._id as unknown as Types.ObjectId,
     });
   }
   order.status = OrderStatus.CANCELED;
@@ -262,7 +297,9 @@ const cancelOrder = async (id: string) => {
   if (custEmail) {
     try {
       const { sendMail } = await import("../../config/mailer");
-      const { orderStatusCustomerHtml } = await import("../../utils/emailTemplates");
+      const { orderStatusCustomerHtml } = await import(
+        "../../utils/emailTemplates"
+      );
       const lang = (process.env.DEFAULT_LANG as "en" | "bn") || "en";
       await sendMail({
         to: custEmail,
@@ -282,13 +319,16 @@ const refundOrder = async (id: string) => {
 
   // restock back
   for (const it of order.items) {
-    await ProductModel.updateOne({ _id: it.product }, { $inc: { stock: it.quantity } });
+    await ProductModel.updateOne(
+      { _id: it.product },
+      { $inc: { stock: it.quantity } }
+    );
     await InventoryService.recordMovement({
       productId: it.product,
       type: InventoryMovementType.IN,
       quantity: it.quantity,
       reason: "Order refunded - restock",
-      orderId: order._id,
+      orderId: order._id as unknown as Types.ObjectId,
     });
   }
   order.status = OrderStatus.REFUNDED;
@@ -314,7 +354,9 @@ const refundOrder = async (id: string) => {
   if (custEmail) {
     try {
       const { sendMail } = await import("../../config/mailer");
-      const { orderStatusCustomerHtml } = await import("../../utils/emailTemplates");
+      const { orderStatusCustomerHtml } = await import(
+        "../../utils/emailTemplates"
+      );
       const lang = (process.env.DEFAULT_LANG as "en" | "bn") || "en";
       await sendMail({
         to: custEmail,
