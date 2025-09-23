@@ -193,6 +193,32 @@ const updateOrderStatus = async (id: string, status: OrderStatus) => {
 
   order.status = status;
   await order.save();
+
+  // email customer about status change if email exists
+  const custEmail = (order.customer as any)?.email;
+  if (custEmail) {
+    try {
+      const { sendMail } = await import("../../config/mailer");
+      const { orderStatusCustomerHtml } = await import("../../utils/emailTemplates");
+      const lang = (process.env.DEFAULT_LANG as "en" | "bn") || "en";
+      // map enum to template key
+      const key =
+        status === OrderStatus.PLACED
+          ? "placed"
+          : status === OrderStatus.DELIVERED
+          ? "delivered"
+          : status === OrderStatus.CANCELED
+          ? "canceled"
+          : "refunded";
+      await sendMail({
+        to: custEmail,
+        subject: `Order #${order._id} ${key}`,
+        html: orderStatusCustomerHtml(order as any, key as any, lang),
+        text: `Your order ${order._id} is now ${key}.`,
+      });
+    } catch {}
+  }
+
   return order;
 };
 
@@ -231,6 +257,22 @@ const cancelOrder = async (id: string) => {
     });
   } catch {}
 
+  // email customer
+  const custEmail = (order.customer as any)?.email;
+  if (custEmail) {
+    try {
+      const { sendMail } = await import("../../config/mailer");
+      const { orderStatusCustomerHtml } = await import("../../utils/emailTemplates");
+      const lang = (process.env.DEFAULT_LANG as "en" | "bn") || "en";
+      await sendMail({
+        to: custEmail,
+        subject: `Order #${order._id} canceled`,
+        html: orderStatusCustomerHtml(order as any, "canceled", lang),
+        text: `Your order ${order._id} is now canceled.`,
+      });
+    } catch {}
+  }
+
   return order;
 };
 
@@ -266,6 +308,22 @@ const refundOrder = async (id: string) => {
       text: `Order ${order._id} has been refunded.`,
     });
   } catch {}
+
+  // email customer
+  const custEmail = (order.customer as any)?.email;
+  if (custEmail) {
+    try {
+      const { sendMail } = await import("../../config/mailer");
+      const { orderStatusCustomerHtml } = await import("../../utils/emailTemplates");
+      const lang = (process.env.DEFAULT_LANG as "en" | "bn") || "en";
+      await sendMail({
+        to: custEmail,
+        subject: `Order #${order._id} refunded`,
+        html: orderStatusCustomerHtml(order as any, "refunded", lang),
+        text: `Your order ${order._id} is now refunded.`,
+      });
+    } catch {}
+  }
 
   return order;
 };
