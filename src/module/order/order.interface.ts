@@ -15,6 +15,7 @@ export interface IOrderItem {
 
 export interface ICheckoutCustomer {
   name: string;
+  email?: string | null;
   phone: string;
   fullAddress: string;
   note?: string | null;

@@ -20,6 +20,7 @@ const orderItemSchema = new Schema(
 const customerSchema = new Schema(
   {
     name: { type: String, required: true },
+    email: { type: String, default: null },
     phone: { type: String, required: true },
     fullAddress: { type: String, required: true },
     note: { type: String, default: null },

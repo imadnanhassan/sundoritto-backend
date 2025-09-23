@@ -8,6 +8,7 @@ const orderItemSchema = z.object({
 
 const customerSchema = z.object({
   name: z.string().min(1),
+  email: z.string().email().optional().nullable(),
   phone: z.string().min(6),
   fullAddress: z.string().min(1),
   note: z.string().optional().nullable(),

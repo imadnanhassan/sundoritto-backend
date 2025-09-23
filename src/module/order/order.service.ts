@@ -54,7 +54,7 @@ const computeShippingForItem = (p: any, quantity: number, location?: string): nu
 const checkout = async (
   payload: {
     items: { productId: string; quantity: number }[];
-    customer: { name: string; phone: string; fullAddress: string; note?: string | null };
+    customer: { name: string; email?: string | null; phone: string; fullAddress: string; note?: string | null };
     shippingLocation?: string;
     paymentMethod: "cod";
   },
@@ -148,10 +148,16 @@ const checkout = async (
   await sendMail({
     to: adminEmail,
     subject: `New order #${order._id}`,
-    text: `A new order has been placed. Total: ${total}`,
+    text: `A new order has been placed.\nTotal: ${total}\nCustomer: ${payload.customer.name}`,
   });
-  if (payload.customer?.phone || payload.customer?.name) {
-    // If you collect email in future, add here; for now only admin mail is certain
+  if (payload.customer?.email) {
+    try {
+      await sendMail({
+        to: payload.customer.email,
+        subject: `Your order #${order._id} has been placed`,
+        text: `Hi ${payload.customer.name},\n\nThanks for your purchase! Your order has been placed successfully.\nTotal: ${total}\nWe will contact you at ${payload.customer.phone} if needed.\n\nRegards,\nSundoritto`,
+      });
+    } catch {}
   }
 
   return order;
