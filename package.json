@@ -13,6 +13,8 @@
     "seed:products": "ts-node src/seeds/product.seeder.ts",
     "seed:customers": "ts-node src/seeds/demoCustomers.seeder.ts",
     "seed:orders": "ts-node src/seeds/demoOrders.seeder.ts",
+    "seed:notifications": "ts-node src/seeds/demoNotifications.seeder.ts",
+    "seed:analytics": "ts-node src/seeds/analyticsSpans.seeder.ts",
     "seed:all": "ts-node src/seeds/index.ts"
   },
   "keywords": [],
