@@ -8,6 +8,7 @@ import { AuthService } from "../auth/auth.service";
 import { IJwtPayload } from "../auth/auth.interface";
 import { ICustomer } from "../customer/customer.interface";
 import { IImageFile } from "../../interface/IImageFile";
+import { NotificationService } from "../notification/notification.service";
 
 // Function to register user without transactions
 const registerUser = async (userData: IUser) => {
@@ -37,6 +38,25 @@ const registerUser = async (userData: IUser) => {
     user: createdUser._id,
   });
   await profile.save();
+
+  // Notify admin about new customer
+  await NotificationService.create("new_customer", "A new customer registered", {
+    userId: String(createdUser._id),
+    email: createdUser.email,
+    name: createdUser.name,
+  });
+  // Email admin
+  try {
+    const { sendMail } = await import("../../config/mailer");
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
+    await sendMail({
+      to: adminEmail,
+      subject: "New customer registered",
+      text: `Name: ${createdUser.name}\nEmail: ${createdUser.email}`,
+    });
+  } catch {
+    // ignore mail errors to not block flow
+  }
 
   // Login the user and return tokens
   return await AuthService.loginUser({

@@ -82,6 +82,9 @@ const productSchema = new Schema<IProduct, ProductModel>(
     // POS
     sku: { type: String, required: true, unique: true, trim: true },
 
+    // Voucher balance (does not reduce product price; for free delivery products rule)
+    voucherBalance: { type: Number, default: 0, min: 0 },
+
     // Promotions
     isFlashDeal: { type: Boolean, default: false },
     flashDeal: {
