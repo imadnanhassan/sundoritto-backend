@@ -11,6 +11,8 @@
     "seed:categories": "ts-node src/seeds/category.seeder.ts",
     "seed:brands": "ts-node src/seeds/brand.seeder.ts",
     "seed:products": "ts-node src/seeds/product.seeder.ts",
+    "seed:customers": "ts-node src/seeds/demoCustomers.seeder.ts",
+    "seed:orders": "ts-node src/seeds/demoOrders.seeder.ts",
     "seed:all": "ts-node src/seeds/index.ts"
   },
   "keywords": [],

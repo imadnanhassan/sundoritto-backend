@@ -2,10 +2,12 @@ import "dotenv/config";
 import connectDB from "../config/database";
 import Brand from "../module/brand/brand.model";
 
+const logo = "https://via.placeholder.com/256.png?text=Logo";
+
 const brands = [
-  { name: "Sundoritto", slug: "sundoritto", logo: null },
-  { name: "Glowify", slug: "glowify", logo: null },
-  { name: "PureCare", slug: "purecare", logo: null },
+  { name: "Sundoritto", slug: "sundoritto", logo },
+  { name: "Glowify", slug: "glowify", logo },
+  { name: "PureCare", slug: "purecare", logo },
 ];
 
 export async function seedBrands() {
