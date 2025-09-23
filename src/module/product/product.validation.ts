@@ -118,3 +118,10 @@ export const rateProductSchema = z.object({
     review: z.string().optional(),
   }),
 });
+
+export const adjustStockSchema = z.object({
+  body: z.object({
+    action: z.enum(["set", "increment", "decrement"]),
+    quantity: z.number().int().min(0),
+  }),
+});

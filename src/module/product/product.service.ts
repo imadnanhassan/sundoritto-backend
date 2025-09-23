@@ -166,10 +166,120 @@ const rateProduct = async (
   return product;
 };
 
+const getCategoryWiseProducts = async () => {
+  const result = await Product.aggregate([
+    {
+      $group: {
+        _id: "$category",
+        count: { $sum: 1 },
+        products: {
+          $push: {
+            _id: "$_id",
+            name: "$name",
+            slug: "$slug",
+            price: "$price",
+            thumbnail: "$thumbnail",
+            brand: "$brand",
+          },
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "categories",
+        localField: "_id",
+        foreignField: "_id",
+        as: "category",
+      },
+    },
+    { $unwind: "$category" },
+    {
+      $project: {
+        _id: 0,
+        category: {
+          _id: "$category._id",
+          name: "$category.name",
+          slug: "$category.slug",
+        },
+        count: 1,
+        products: 1,
+      },
+    },
+    { $sort: { "category.name": 1 } },
+  ]);
+
+  return result;
+};
+
+const getBrandProductCounts = async () => {
+  const result = await Product.aggregate([
+    {
+      $group: {
+        _id: "$brand",
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $lookup: {
+        from: "brands",
+        localField: "_id",
+        foreignField: "_id",
+        as: "brand",
+      },
+    },
+    { $unwind: "$brand" },
+    {
+      $project: {
+        _id: 0,
+        brand: {
+          _id: "$brand._id",
+          name: "$brand.name",
+          slug: "$brand.slug",
+          logo: "$brand.logo",
+        },
+        count: 1,
+      },
+    },
+    { $sort: { "brand.name": 1 } },
+  ]);
+  return result;
+};
+
+const adjustStock = async (
+  id: string,
+  payload: { action: "set" | "increment" | "decrement"; quantity: number }
+) => {
+  const product = await Product.findById(id);
+  if (!product) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
+  }
+
+  const qty = Math.max(0, Math.floor(payload.quantity));
+
+  if (payload.action === "set") {
+    product.stock = qty;
+  } else if (payload.action === "increment") {
+    product.stock = product.stock + qty;
+  } else if (payload.action === "decrement") {
+    if (product.stock - qty < 0) {
+      throw new AppError(StatusCodes.BAD_REQUEST, "Insufficient stock");
+    }
+    product.stock = product.stock - qty;
+  } else {
+    throw new AppError(StatusCodes.BAD_REQUEST, "Invalid stock action");
+  }
+
+  await product.save();
+  return product;
+};
+
 export const ProductService = {
   createProduct,
   getProducts,
   getProductBySlug,
   updateProduct,
   rateProduct,
+  getCategoryWiseProducts,
+  getBrandProductCounts,
+  adjustStock,
 };

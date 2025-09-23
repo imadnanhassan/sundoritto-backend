@@ -1,7 +1,7 @@
 import { Router, type Router as ExpressRouter } from "express";
 import { ProductController } from "./product.controller";
 import validateRequest from "../../middleware/validateRequest";
-import { createProductSchema, rateProductSchema, updateProductSchema } from "./product.validation";
+import { adjustStockSchema, createProductSchema, rateProductSchema, updateProductSchema } from "./product.validation";
 import { multerUpload } from "../../config/multer.config";
 import { parseBody } from "../../middleware/bodyParser";
 import auth from "../../middleware/auth";
@@ -12,6 +12,10 @@ const router = Router();
 // Public routes
 router.get("/", ProductController.getProducts);
 router.get("/:slug", ProductController.getProductBySlug);
+
+// Analytics routes (could be public or admin — making public for visibility)
+router.get("/stats/category-wise/list", ProductController.getCategoryWiseProducts);
+router.get("/stats/brand-counts", ProductController.getBrandProductCounts);
 
 // Admin routes
 router.post(
@@ -36,6 +40,14 @@ router.patch(
   parseBody,
   validateRequest(updateProductSchema),
   ProductController.updateProduct
+);
+
+// Admin stock management
+router.patch(
+  "/:id/stock",
+  auth(UserRole.ADMIN),
+  validateRequest(adjustStockSchema),
+  ProductController.adjustStock
 );
 
 // Customer route for rating

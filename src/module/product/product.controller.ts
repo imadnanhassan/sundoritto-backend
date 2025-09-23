@@ -79,10 +79,46 @@ const rateProduct = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getCategoryWiseProducts = catchAsync(async (_req: Request, res: Response) => {
+  const result = await ProductService.getCategoryWiseProducts();
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Category-wise products retrieved successfully",
+    data: result,
+  });
+});
+
+const getBrandProductCounts = catchAsync(async (_req: Request, res: Response) => {
+  const result = await ProductService.getBrandProductCounts();
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Brand product counts retrieved successfully",
+    data: result,
+  });
+});
+
+const adjustStock = catchAsync(async (req: Request, res: Response) => {
+  const result = await ProductService.adjustStock(req.params.id as string, req.body);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Stock updated successfully",
+    data: result,
+  });
+});
+
 export const ProductController = {
   createProduct,
   getProducts,
   getProductBySlug,
   updateProduct,
   rateProduct,
+  getCategoryWiseProducts,
+  getBrandProductCounts,
+  adjustStock,
 };
