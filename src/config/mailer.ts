@@ -1,10 +1,17 @@
 import nodemailer from "nodemailer";
 
+export interface MailAttachment {
+  filename: string;
+  content: Buffer | string;
+  contentType?: string;
+}
+
 export interface MailOptions {
   to: string | string[];
   subject: string;
   text?: string;
   html?: string;
+  attachments?: MailAttachment[];
 }
 
 const transporter = nodemailer.createTransport({
@@ -25,5 +32,6 @@ export async function sendMail(options: MailOptions) {
     subject: options.subject,
     text: options.text,
     html: options.html,
+    attachments: options.attachments,
   });
 }

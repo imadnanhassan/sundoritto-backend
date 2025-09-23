@@ -20,6 +20,7 @@ export const generateOrderInvoicePDF = (order: IOrder, res: Response) => {
   // Customer
   doc.fontSize(14).text("Customer Info");
   doc.fontSize(12).text(`Name: ${order.customer.name}`);
+  if ((order.customer as any).email) doc.text(`Email: ${(order.customer as any).email}`);
   doc.text(`Phone: ${order.customer.phone}`);
   doc.text(`Address: ${order.customer.fullAddress}`);
   if (order.customer.note) doc.text(`Note: ${order.customer.note}`);
@@ -42,6 +43,51 @@ export const generateOrderInvoicePDF = (order: IOrder, res: Response) => {
 
   doc.end();
 };
+
+export async function generateOrderInvoiceBuffer(order: IOrder): Promise<Buffer> {
+  return await new Promise<Buffer>((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 50 });
+    const chunks: Buffer[] = [];
+    doc.on("data", (chunk) => chunks.push(chunk as Buffer));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
+
+    // Header
+    doc.fontSize(20).text("Order Invoice", { align: "center" });
+    doc.moveDown();
+
+    // Order info
+    doc.fontSize(12).text(`Order ID: ${order._id}`);
+    doc.text(`Date: ${new Date(order.createdAt).toLocaleString()}`);
+    doc.moveDown();
+
+    // Customer
+    doc.fontSize(14).text("Customer Info");
+    doc.fontSize(12).text(`Name: ${order.customer.name}`);
+    if ((order.customer as any).email) doc.text(`Email: ${(order.customer as any).email}`);
+    doc.text(`Phone: ${order.customer.phone}`);
+    doc.text(`Address: ${order.customer.fullAddress}`);
+    if (order.customer.note) doc.text(`Note: ${order.customer.note}`);
+    doc.moveDown();
+
+    // Items
+    doc.fontSize(14).text("Items");
+    doc.moveDown(0.5);
+    order.items.forEach((it) => {
+      doc
+        .fontSize(12)
+        .text(`${it.name} (x${it.quantity}) - ${it.unitPrice.toFixed(2)} each = ${it.totalPrice.toFixed(2)}`);
+    });
+    doc.moveDown();
+
+    // Totals
+    doc.fontSize(12).text(`Subtotal: ${order.subtotal.toFixed(2)}`);
+    doc.text(`Shipping: ${order.shippingCost.toFixed(2)}`);
+    doc.text(`Total: ${order.total.toFixed(2)}`);
+
+    doc.end();
+  });
+}
 
 export const generateSystemReportPDF = (
   report: { range: string; from: Date; stats: { users: number; orders: number; sales: number } },

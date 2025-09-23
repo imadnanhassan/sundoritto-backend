@@ -142,20 +142,36 @@ const checkout = async (
     total,
   });
 
-  // email to admin and (if available) customer
+  // email to admin and (if available) customer with HTML/PDF
   const { sendMail } = await import("../../config/mailer");
+  const { orderAdminHtml, orderCustomerHtml } = await import("../../utils/emailTemplates");
+  const { generateOrderInvoiceBuffer } = await import("../../utils/pdf");
   const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
+
+  // Admin email (HTML summary)
   await sendMail({
     to: adminEmail,
     subject: `New order #${order._id}`,
+    html: orderAdminHtml(order as any),
     text: `A new order has been placed.\nTotal: ${total}\nCustomer: ${payload.customer.name}`,
   });
+
+  // Customer email (HTML + PDF invoice attachment)
   if (payload.customer?.email) {
     try {
+      const pdf = await generateOrderInvoiceBuffer(order as any);
       await sendMail({
         to: payload.customer.email,
         subject: `Your order #${order._id} has been placed`,
+        html: orderCustomerHtml(order as any),
         text: `Hi ${payload.customer.name},\n\nThanks for your purchase! Your order has been placed successfully.\nTotal: ${total}\nWe will contact you at ${payload.customer.phone} if needed.\n\nRegards,\nSundoritto`,
+        attachments: [
+          {
+            filename: `invoice-${order._id}.pdf`,
+            content: pdf,
+            contentType: "application/pdf",
+          },
+        ],
       });
     } catch {}
   }
