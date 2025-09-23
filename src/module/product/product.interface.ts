@@ -67,6 +67,9 @@ export interface IProduct extends Document {
   // POS
   sku: string;
 
+  // Voucher balance (does not reduce product price; requires free delivery products at checkout)
+  voucherBalance?: number;
+
   slug: string;
   createdAt: Date;
   updatedAt: Date;
