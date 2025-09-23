@@ -1,0 +1,408 @@
+{
+  "info": {
+    "name": "Sundoritto Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "c7f2a2e0-0000-4000-9000-collection"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000" },
+    { "key": "admin_token", "value": "" },
+    { "key": "customer_token", "value": "" },
+    { "key": "categoryId", "value": "" },
+    { "key": "brandId", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "orderId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (returns tokens)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dev.adnanhassan@gmail.com\",\n  \"password\": \"constPassword(38)\",\n  \"clientInfo\": {\n    \"device\": \"pc\",\n    \"browser\": \"postman\",\n    \"ipAddress\": \"127.0.0.1\",\n    \"userAgent\": \"postman\"\n  }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Register (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/user", "host": ["{{base_url}}"], "path": ["user"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Customer\",\n  \"role\": \"customer\",\n  \"clientInfo\": {\n    \"device\": \"pc\",\n    \"browser\": \"postman\",\n    \"ipAddress\": \"127.0.0.1\",\n    \"userAgent\": \"postman\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/user/me", "host": ["{{base_url}}"], "path": ["user", "me"] }
+          }
+        },
+        {
+          "name": "Update Profile (photo upload)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "profilePhoto", "type": "file", "src": "" },
+                {
+                  "key": "data",
+                  "type": "text",
+                  "value": "{\"phoneNo\":\"01234567890\",\"gender\":\"Other\",\"dateOfBirth\":\"2000-01-01\",\"address\":\"Dhaka\"}"
+                }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/user/update-profile", "host": ["{{base_url}}"], "path": ["user", "update-profile"] }
+          }
+        },
+        {
+          "name": "Toggle User Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/user/{{customerId}}/status", "host": ["{{base_url}}"], "path": ["user", "{{customerId}}", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Category",
+      "item": [
+        {
+          "name": "Create Category (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "banner", "type": "file", "src": "" },
+                { "key": "icon", "type": "file", "src": "" },
+                { "key": "data", "type": "text", "value": "{\"name\":\"Skin Care\",\"slug\":\"skin-care\",\"status\":\"active\"}" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/category", "host": ["{{base_url}}"], "path": ["category"] }
+          }
+        },
+        {
+          "name": "List Categories",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/category", "host": ["{{base_url}}"], "path": ["category"] } }
+        },
+        {
+          "name": "Get Category by Slug",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/category/skin-care", "host": ["{{base_url}}"], "path": ["category", "skin-care"] } }
+        },
+        {
+          "name": "Update Category (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "banner", "type": "file", "src": "" },
+                { "key": "icon", "type": "file", "src": "" },
+                { "key": "data", "type": "text", "value": "{\"name\":\"Skin Care Updated\"}" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/category/{{categoryId}}", "host": ["{{base_url}}"], "path": ["category", "{{categoryId}}"] }
+          }
+        },
+        {
+          "name": "Toggle Category Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/category/{{categoryId}}/status", "host": ["{{base_url}}"], "path": ["category", "{{categoryId}}", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Brand",
+      "item": [
+        {
+          "name": "Create Brand (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "logo", "type": "file", "src": "" },
+                { "key": "data", "type": "text", "value": "{\"name\":\"Sundoritto\",\"slug\":\"sundoritto\"}" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/brand", "host": ["{{base_url}}"], "path": ["brand"] }
+          }
+        },
+        {
+          "name": "List Brands",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/brand", "host": ["{{base_url}}"], "path": ["brand"] } }
+        },
+        {
+          "name": "Get Brand by Slug",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/brand/sundoritto", "host": ["{{base_url}}"], "path": ["brand", "sundoritto"] } }
+        },
+        {
+          "name": "Update Brand (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "logo", "type": "file", "src": "" },
+                { "key": "data", "type": "text", "value": "{\"name\":\"Sundoritto Updated\"}" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/brand/{{brandId}}", "host": ["{{base_url}}"], "path": ["brand", "{{brandId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Product",
+      "item": [
+        {
+          "name": "Create Product (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "thumbnail", "type": "file", "src": "" },
+                { "key": "gallery", "type": "file", "src": "" },
+                { "key": "gallery", "type": "file", "src": "" },
+                {
+                  "key": "data",
+                  "type": "text",
+                  "value": "{\"name\":\"Face Cream\",\"sku\":\"SKU-001\",\"category\":\"{{categoryId}}\",\"brand\":\"{{brandId}}\",\"price\":1200}"
+                }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/product", "host": ["{{base_url}}"], "path": ["product"] }
+          }
+        },
+        {
+          "name": "List Products (search/paginate)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/product?searchTerm=cream&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["product"],
+              "query": [{ "key": "searchTerm", "value": "cream" }, { "key": "page", "value": "1" }, { "key": "limit", "value": "10" }]
+            }
+          }
+        },
+        {
+          "name": "Get Product by Slug",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/product/face-cream", "host": ["{{base_url}}"], "path": ["product", "face-cream"] } }
+        },
+        {
+          "name": "Update Product (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "thumbnail", "type": "file", "src": "" },
+                { "key": "gallery", "type": "file", "src": "" },
+                { "key": "data", "type": "text", "value": "{\"price\":999}" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/product/{{productId}}", "host": ["{{base_url}}"], "path": ["product", "{{productId}}"] }
+          }
+        },
+        {
+          "name": "Adjust Stock (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"action\": \"increment\", \"quantity\": 5 }" },
+            "url": { "raw": "{{base_url}}/product/{{productId}}/stock", "host": ["{{base_url}}"], "path": ["product", "{{productId}}", "stock"] }
+          }
+        },
+        {
+          "name": "Active Flash Deals",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/product/flash-deals/active", "host": ["{{base_url}}"], "path": ["product", "flash-deals", "active"] } }
+        },
+        {
+          "name": "Offer Products by Type",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/product/offers/winter", "host": ["{{base_url}}"], "path": ["product", "offers", "winter"] } }
+        },
+        {
+          "name": "Rate Product (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customer_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"rating\": 5, \"review\": \"Great product!\" }" },
+            "url": { "raw": "{{base_url}}/product/{{productId}}/rate", "host": ["{{base_url}}"], "path": ["product", "{{productId}}", "rate"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order",
+      "item": [
+        {
+          "name": "Checkout (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/order/checkout", "host": ["{{base_url}}"], "path": ["order", "checkout"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [ { \"productId\": \"{{productId}}\", \"quantity\": 1 } ],\n  \"customer\": {\n    \"name\": \"Customer One\",\n    \"email\": \"customer@example.com\",\n    \"phone\": \"01234567890\",\n    \"fullAddress\": \"Dhaka, Bangladesh\"\n  },\n  \"paymentMethod\": \"cod\",\n  \"shippingLocation\": \"Dhaka\"\n}"
+            }
+          }
+        },
+        {
+          "name": "My Orders (Customer)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customer_token}}" }],
+            "url": { "raw": "{{base_url}}/order/my", "host": ["{{base_url}}"], "path": ["order", "my"] }
+          }
+        },
+        {
+          "name": "List Orders (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/order", "host": ["{{base_url}}"], "path": ["order"] }
+          }
+        },
+        {
+          "name": "Update Order Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"status\": \"delivered\" }" },
+            "url": { "raw": "{{base_url}}/order/{{orderId}}/status", "host": ["{{base_url}}"], "path": ["order", "{{orderId}}", "status"] }
+          }
+        },
+        {
+          "name": "Cancel Order (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/order/{{orderId}}/cancel", "host": ["{{base_url}}"], "path": ["order", "{{orderId}}", "cancel"] }
+          }
+        },
+        {
+          "name": "Refund Order (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/order/{{orderId}}/refund", "host": ["{{base_url}}"], "path": ["order", "{{orderId}}", "refund"] }
+          }
+        },
+        {
+          "name": "Order Invoice PDF",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/order/{{orderId}}/invoice", "host": ["{{base_url}}"], "path": ["order", "{{orderId}}", "invoice"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics (Admin)",
+      "item": [
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/analytics/summary?range=weekly", "host": ["{{base_url}}"], "path": ["analytics", "summary"], "query": [{ "key": "range", "value": "weekly" }] }
+          }
+        },
+        {
+          "name": "Report PDF",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/analytics/report.pdf?range=weekly", "host": ["{{base_url}}"], "path": ["analytics", "report.pdf"], "query": [{ "key": "range", "value": "weekly" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications (Admin)",
+      "item": [
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/notifications", "host": ["{{base_url}}"], "path": ["notifications"] }
+          }
+        },
+        {
+          "name": "Mark Read",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/notifications/{{notificationId}}/read", "host": ["{{base_url}}"], "path": ["notifications", "{{notificationId}}", "read"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory (Admin)",
+      "item": [
+        {
+          "name": "List Movements",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/inventory?productId={{productId}}&type=out&from=2024-01-01",
+              "host": ["{{base_url}}"],
+              "path": ["inventory"],
+              "query": [
+                { "key": "productId", "value": "{{productId}}" },
+                { "key": "type", "value": "out" },
+                { "key": "from", "value": "2024-01-01" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
