@@ -9,11 +9,16 @@ import User from "../module/user/user.model";
 
 const auth = (...requiredRoles: UserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization;
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
+    if (!authHeader) {
       throw new AppError(StatusCodes.UNAUTHORIZED, "You are not authorized!");
     }
+
+    // Support both "Bearer <token>" and raw token
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : authHeader.trim();
 
     try {
       const decoded = jwt.verify(
@@ -29,7 +34,7 @@ const auth = (...requiredRoles: UserRole[]) => {
         throw new AppError(StatusCodes.NOT_FOUND, "This user is not found!");
       }
 
-      if (requiredRoles && !requiredRoles.includes(role)) {
+      if (requiredRoles && !requiredRoles.includes(role as UserRole)) {
         throw new AppError(StatusCodes.UNAUTHORIZED, "You are not authorized!");
       }
 
