@@ -45,6 +45,18 @@ const registerUser = async (userData: IUser) => {
     email: createdUser.email,
     name: createdUser.name,
   });
+  // Email admin
+  try {
+    const { sendMail } = await import("../../config/mailer");
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
+    await sendMail({
+      to: adminEmail,
+      subject: "New customer registered",
+      text: `Name: ${createdUser.name}\nEmail: ${createdUser.email}`,
+    });
+  } catch {
+    // ignore mail errors to not block flow
+  }
 
   // Login the user and return tokens
   return await AuthService.loginUser({

@@ -142,6 +142,18 @@ const checkout = async (
     total,
   });
 
+  // email to admin and (if available) customer
+  const { sendMail } = await import("../../config/mailer");
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
+  await sendMail({
+    to: adminEmail,
+    subject: `New order #${order._id}`,
+    text: `A new order has been placed. Total: ${total}`,
+  });
+  if (payload.customer?.phone || payload.customer?.name) {
+    // If you collect email in future, add here; for now only admin mail is certain
+  }
+
   return order;
 };
 
@@ -186,6 +198,17 @@ const cancelOrder = async (id: string) => {
     orderId: String(order._id),
   });
 
+  // email admin
+  try {
+    const { sendMail } = await import("../../config/mailer");
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
+    await sendMail({
+      to: adminEmail,
+      subject: `Order #${order._id} canceled`,
+      text: `Order ${order._id} has been canceled.`,
+    });
+  } catch {}
+
   return order;
 };
 
@@ -210,6 +233,17 @@ const refundOrder = async (id: string) => {
   await NotificationService.create("order_refunded", "An order was refunded", {
     orderId: String(order._id),
   });
+
+  // email admin
+  try {
+    const { sendMail } = await import("../../config/mailer");
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
+    await sendMail({
+      to: adminEmail,
+      subject: `Order #${order._id} refunded`,
+      text: `Order ${order._id} has been refunded.`,
+    });
+  } catch {}
 
   return order;
 };
