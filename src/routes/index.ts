@@ -5,6 +5,8 @@ import { CategoryRoutes } from "../module/category/category.routes";
 import { BrandRoutes } from "../module/brand/brand.routes";
 import { ProductRoutes } from "../module/product/product.routes";
 import { OrderRoutes } from "../module/order/order.routes";
+import { AnalyticsRoutes } from "../module/analytics/analytics.routes";
+import { NotificationRoutes } from "../module/notification/notification.routes";
 
 const router: ExpressRouter = Router();
 
@@ -32,6 +34,14 @@ const moduleRoutes = [
   {
     path: "/order",
     route: OrderRoutes,
+  },
+  {
+    path: "/analytics",
+    route: AnalyticsRoutes,
+  },
+  {
+    path: "/notifications",
+    route: NotificationRoutes,
   },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

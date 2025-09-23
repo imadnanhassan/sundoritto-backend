@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "seed:admin": "ts-node src/seeds/admin.seeder.ts"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +30,7 @@
     "mongoose": "^8.18.1",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
+    "pdfkit": "^0.15.0",
     "ua-parser-js": "^2.0.5",
     "zod": "^4.1.11"
   },
@@ -41,6 +43,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.3.3",
+    "@types/pdfkit": "^0.13.6",
     "add": "^2.0.6",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",

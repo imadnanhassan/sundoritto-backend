@@ -109,12 +109,19 @@ const checkout = async (
 
   const total = subtotal + shippingCost;
 
-  // Deduct stocks
+  // Deduct stocks and record inventory OUT
   for (const it of payload.items) {
+    const pid = new Types.ObjectId(it.productId);
     await ProductModel.updateOne(
-      { _id: new Types.ObjectId(it.productId) },
+      { _id: pid },
       { $inc: { stock: -it.quantity } }
     );
+    await InventoryService.recordMovement({
+      productId: pid,
+      type: InventoryMovementType.OUT,
+      quantity: it.quantity,
+      reason: "Order checkout",
+    });
   }
 
   const order = await Order.create({
@@ -128,6 +135,12 @@ const checkout = async (
     subtotal,
     total,
   } as any);
+
+  // notify
+  await NotificationService.create("new_order", "A new order has been placed", {
+    orderId: String(order._id),
+    total,
+  });
 
   return order;
 };
@@ -158,9 +171,21 @@ const cancelOrder = async (id: string) => {
   // restock
   for (const it of order.items) {
     await ProductModel.updateOne({ _id: it.product }, { $inc: { stock: it.quantity } });
+    await InventoryService.recordMovement({
+      productId: it.product,
+      type: InventoryMovementType.IN,
+      quantity: it.quantity,
+      reason: "Order canceled - restock",
+      orderId: order._id,
+    });
   }
   order.status = OrderStatus.CANCELED;
   await order.save();
+
+  await NotificationService.create("order_canceled", "An order was canceled", {
+    orderId: String(order._id),
+  });
+
   return order;
 };
 
@@ -171,11 +196,27 @@ const refundOrder = async (id: string) => {
   // restock back
   for (const it of order.items) {
     await ProductModel.updateOne({ _id: it.product }, { $inc: { stock: it.quantity } });
+    await InventoryService.recordMovement({
+      productId: it.product,
+      type: InventoryMovementType.IN,
+      quantity: it.quantity,
+      reason: "Order refunded - restock",
+      orderId: order._id,
+    });
   }
   order.status = OrderStatus.REFUNDED;
   await order.save();
+
+  await NotificationService.create("order_refunded", "An order was refunded", {
+    orderId: String(order._id),
+  });
+
   return order;
 };
+
+import { InventoryService } from "../inventory/inventory.service";
+import { InventoryMovementType } from "../../enum/inventory.enum";
+import { NotificationService } from "../notification/notification.service";
 
 export const OrderService = {
   checkout,
@@ -184,4 +225,9 @@ export const OrderService = {
   updateOrderStatus,
   cancelOrder,
   refundOrder,
+  getById: async (id: string) => {
+    const order = await Order.findById(id);
+    if (!order) throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
+    return order;
+  },
 };

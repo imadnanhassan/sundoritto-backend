@@ -10,6 +10,9 @@ const router = Router();
 // Customer checkout (auth optional; change to required if needed)
 router.post("/checkout", validateRequest(checkoutSchema), OrderController.checkout);
 
+// Invoice PDF
+router.get("/:id/invoice", OrderController.invoice);
+
 // Customer orders
 router.get("/my", auth(UserRole.CUSTOMER), OrderController.myOrders);
 

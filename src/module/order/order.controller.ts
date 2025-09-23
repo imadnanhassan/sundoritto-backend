@@ -5,6 +5,7 @@ import { OrderService } from "./order.service";
 import { StatusCodes } from "http-status-codes";
 import { IJwtPayload } from "../auth/auth.interface";
 import { OrderStatus } from "../../enum/order.enum";
+import { generateOrderInvoicePDF } from "../../utils/pdf";
 
 const checkout = catchAsync(async (req: Request, res: Response) => {
   const result = await OrderService.checkout(req.body, req.user as IJwtPayload | undefined);
@@ -75,6 +76,11 @@ const refundOrder = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const invoice = catchAsync(async (req: Request, res: Response) => {
+  const order = await OrderService.getById(req.params.id as string);
+  generateOrderInvoicePDF(order as any, res);
+});
+
 export const OrderController = {
   checkout,
   myOrders,
@@ -82,4 +88,5 @@ export const OrderController = {
   updateOrderStatus,
   cancelOrder,
   refundOrder,
+  invoice,
 };
