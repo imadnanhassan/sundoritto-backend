@@ -112,6 +112,64 @@ const adjustStock = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const setFlashDeal = catchAsync(async (req: Request, res: Response) => {
+  const result = await ProductService.setFlashDeal(req.params.id as string, req.body);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Flash deal set successfully",
+    data: result,
+  });
+});
+
+const clearFlashDeal = catchAsync(async (req: Request, res: Response) => {
+  const result = await ProductService.clearFlashDeal(req.params.id as string);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Flash deal cleared successfully",
+    data: result,
+  });
+});
+
+const getActiveFlashDeals = catchAsync(async (_req: Request, res: Response) => {
+  const result = await ProductService.getActiveFlashDeals();
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Active flash deals retrieved successfully",
+    data: result,
+  });
+});
+
+const setOfferType = catchAsync(async (req: Request, res: Response) => {
+  const result = await ProductService.setOfferType(
+    req.params.id as string,
+    req.body.offerType ?? null
+  );
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Offer type updated successfully",
+    data: result,
+  });
+});
+
+const getOfferProducts = catchAsync(async (req: Request, res: Response) => {
+  const result = await ProductService.getOfferProducts(req.params.type as string);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Offer products retrieved successfully",
+    data: result,
+  });
+});
+
 export const ProductController = {
   createProduct,
   getProducts,
@@ -121,4 +179,9 @@ export const ProductController = {
   getCategoryWiseProducts,
   getBrandProductCounts,
   adjustStock,
+  setFlashDeal,
+  clearFlashDeal,
+  getActiveFlashDeals,
+  setOfferType,
+  getOfferProducts,
 };

@@ -273,6 +273,68 @@ const adjustStock = async (
   return product;
 };
 
+const setFlashDeal = async (
+  id: string,
+  payload: { isFlashDeal?: boolean; startAt: string | Date; endAt: string | Date; dealPrice?: number }
+) => {
+  const product = await Product.findById(id);
+  if (!product) throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
+
+  const start = new Date(payload.startAt);
+  const end = new Date(payload.endAt);
+  if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "Invalid flash deal period");
+  }
+  product.isFlashDeal = payload.isFlashDeal ?? true;
+  product.flashDeal = {
+    startAt: start,
+    endAt: end,
+    dealPrice: payload.dealPrice,
+  };
+
+  await product.save();
+  return product;
+};
+
+const clearFlashDeal = async (id: string) => {
+  const product = await Product.findById(id);
+  if (!product) throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
+  product.isFlashDeal = false;
+  product.flashDeal = null as any;
+  await product.save();
+  return product;
+};
+
+const getActiveFlashDeals = async () => {
+  const now = new Date();
+  const products = await Product.find({
+    isFlashDeal: true,
+    "flashDeal.startAt": { $lte: now },
+    "flashDeal.endAt": { $gte: now },
+  })
+    .select("name slug price thumbnail flashDeal brand category")
+    .populate("brand", "name slug logo")
+    .populate("category", "name slug");
+
+  return products;
+};
+
+const setOfferType = async (id: string, offerType: any | null) => {
+  const product = await Product.findById(id);
+  if (!product) throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
+  (product as any).offerType = offerType ?? null;
+  await product.save();
+  return product;
+};
+
+const getOfferProducts = async (offerType: any) => {
+  const products = await Product.find({ offerType })
+    .select("name slug price thumbnail offerType brand category")
+    .populate("brand", "name slug logo")
+    .populate("category", "name slug");
+  return products;
+};
+
 export const ProductService = {
   createProduct,
   getProducts,
@@ -282,4 +344,9 @@ export const ProductService = {
   getCategoryWiseProducts,
   getBrandProductCounts,
   adjustStock,
+  setFlashDeal,
+  clearFlashDeal,
+  getActiveFlashDeals,
+  setOfferType,
+  getOfferProducts,
 };

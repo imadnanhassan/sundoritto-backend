@@ -1,6 +1,7 @@
 import mongoose, { Schema, Types } from "mongoose";
 import { IProduct, ProductModel } from "./product.interface";
 import { DiscountType, ShippingType } from "../../enum/product.enum";
+import { OfferType } from "../../enum/offer.enum";
 
 const specItemSchema = new Schema(
   {
@@ -77,6 +78,25 @@ const productSchema = new Schema<IProduct, ProductModel>(
     variants: [variantSchema],
     qna: [qnaSchema],
     howToUse: { type: String },
+
+    // Promotions
+    isFlashDeal: { type: Boolean, default: false },
+    flashDeal: {
+      startAt: { type: Date },
+      endAt: { type: Date },
+      dealPrice: { type: Number, min: 0 },
+    },
+    offerType: {
+      type: String,
+      enum: [
+        OfferType.WINTER,
+        OfferType.SUMMER,
+        OfferType.EID,
+        OfferType.WOMEN_SPECIAL,
+      ],
+      default: null,
+    },
+
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
   },
   {

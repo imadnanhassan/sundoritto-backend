@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { DiscountType, ShippingType } from "../../enum/product.enum";
+import { OfferType } from "../../enum/offer.enum";
 
 const specItemSchema = z.object({
   key: z.string().min(1),
@@ -24,6 +25,12 @@ const discountSchema = z.object({
 const shippingSchema = z.object({
   type: z.enum([ShippingType.FREE, ShippingType.LOCATION_BASED]).default(ShippingType.FREE),
   locations: z.array(locationShippingSchema).optional(),
+});
+
+const flashDealSchema = z.object({
+  startAt: z.string().datetime(),
+  endAt: z.string().datetime(),
+  dealPrice: z.number().min(0).optional(),
 });
 
 export const createProductSchema = z.object({
@@ -61,6 +68,10 @@ export const createProductSchema = z.object({
         })
       ).optional(),
       howToUse: z.string().optional(),
+      // promotions
+      isFlashDeal: z.boolean().optional(),
+      flashDeal: flashDealSchema.optional(),
+      offerType: z.nativeEnum(OfferType).optional().nullable(),
       slug: z
         .string()
         .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug format")
@@ -104,6 +115,10 @@ export const updateProductSchema = z.object({
         })
       ).optional(),
       howToUse: z.string().optional(),
+      // promotions
+      isFlashDeal: z.boolean().optional(),
+      flashDeal: flashDealSchema.optional().nullable(),
+      offerType: z.nativeEnum(OfferType).optional().nullable(),
       slug: z
         .string()
         .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug format")
@@ -123,5 +138,20 @@ export const adjustStockSchema = z.object({
   body: z.object({
     action: z.enum(["set", "increment", "decrement"]),
     quantity: z.number().int().min(0),
+  }),
+});
+
+export const setFlashDealSchema = z.object({
+  body: z.object({
+    isFlashDeal: z.boolean().default(true),
+    startAt: z.string().datetime(),
+    endAt: z.string().datetime(),
+    dealPrice: z.number().min(0).optional(),
+  }),
+});
+
+export const setOfferTypeSchema = z.object({
+  body: z.object({
+    offerType: z.nativeEnum(OfferType).nullable(),
   }),
 });

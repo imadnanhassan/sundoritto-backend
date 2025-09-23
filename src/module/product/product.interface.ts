@@ -1,5 +1,6 @@
 import { Document, Model, Types } from "mongoose";
 import { DiscountType, ShippingType } from "../../enum/product.enum";
+import { OfferType } from "../../enum/offer.enum";
 
 export interface ISpecItem {
   key: string;
@@ -53,6 +54,16 @@ export interface IProduct extends Document {
   variants?: IVariant[];
   qna?: IQnaItem[];
   howToUse?: string;
+
+  // Promotions
+  isFlashDeal?: boolean;
+  flashDeal?: {
+    startAt: Date;
+    endAt: Date;
+    dealPrice?: number; // optional specific price
+  } | null;
+  offerType?: OfferType | null;
+
   slug: string;
   createdAt: Date;
   updatedAt: Date;
