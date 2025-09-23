@@ -64,6 +64,9 @@ export interface IProduct extends Document {
   } | null;
   offerType?: OfferType | null;
 
+  // POS
+  sku: string;
+
   slug: string;
   createdAt: Date;
   updatedAt: Date;

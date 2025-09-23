@@ -79,6 +79,9 @@ const productSchema = new Schema<IProduct, ProductModel>(
     qna: [qnaSchema],
     howToUse: { type: String },
 
+    // POS
+    sku: { type: String, required: true, unique: true, trim: true },
+
     // Promotions
     isFlashDeal: { type: Boolean, default: false },
     flashDeal: {

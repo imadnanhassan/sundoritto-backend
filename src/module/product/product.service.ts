@@ -48,11 +48,20 @@ const createProduct = async (payload: Partial<IProduct>, files?: IImageFiles) =>
   if (!payload.brand) {
     throw new AppError(StatusCodes.BAD_REQUEST, "Brand is required");
   }
+  if (!payload.sku) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "SKU is required");
+  }
+
+  // uniqueness checks
   if (payload.slug) {
     const exists = await Product.findOne({ slug: payload.slug });
     if (exists) {
       throw new AppError(StatusCodes.CONFLICT, "Product with this slug already exists");
     }
+  }
+  const skuExists = await Product.findOne({ sku: payload.sku });
+  if (skuExists) {
+    throw new AppError(StatusCodes.CONFLICT, "Product with this SKU already exists");
   }
 
   const created = await Product.create(payload);
@@ -89,7 +98,7 @@ const getProducts = async (query: {
       page,
       limit,
       searchTerm,
-      searchFields: ["name", "slug"],
+      searchFields: ["name", "slug", "sku"],
       filters,
       sortBy,
       sortOrder,
