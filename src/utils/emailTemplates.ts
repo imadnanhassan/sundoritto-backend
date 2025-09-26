@@ -27,6 +27,9 @@ const t = (key: string, lang: Lang = "en") => {
     canceled: { en: "canceled", bn: "বাতিল" },
     refunded: { en: "refunded", bn: "রিফান্ড" },
     now: { en: "is now", bn: "এখন" },
+    otpTitle: { en: "Password Reset Verification Code", bn: "পাসওয়ার্ড রিসেট ভেরিফিকেশন কোড" },
+    otpInstruction: { en: "Use the code below to reset your password. It expires in 5 minutes.", bn: "নিচের কোড ব্যবহার করে পাসওয়ার্ড রিসেট করুন। কোডটি ৫ মিনিটের জন্য বৈধ।" },
+    code: { en: "Code", bn: "কোড" },
   };
   return (dict[key] && dict[key][lang]) || dict[key]?.en || key;
 };
@@ -129,6 +132,19 @@ export function orderStatusCustomerHtml(order: IOrder, status: "placed"|"deliver
       <strong>${t("total", lang)}:</strong> ${order.total.toFixed(2)}
     </p>
     <p style="margin-top:20px">${t("regards", lang)},<br/>${branding().name}</p>
+  `;
+  return layout(html);
+}
+
+export function otpEmailHtml(userName: string, code: string, lang: Lang = "en") {
+  const html = `
+    <h2>${t("otpTitle", lang)}</h2>
+    <p>${t("otpInstruction", lang)}</p>
+    <div style="margin:16px 0;padding:12px;border:1px dashed #ccc;border-radius:8px;background:#fafafa">
+      <div style="font-size:14px;color:#666">${t("code", lang)}</div>
+      <div style="font-size:24px;letter-spacing:4px;font-weight:bold">${code}</div>
+    </div>
+    <p>${t("regards", lang)},<br/>${branding().name}</p>
   `;
   return layout(html);
 }

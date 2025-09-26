@@ -15,4 +15,9 @@ router.get("/verify-email", AuthController.verifyEmail);
 router.post("/2fa/enable", auth(UserRole.CUSTOMER, UserRole.ADMIN), AuthController.enable2FA);
 router.post("/2fa/disable", auth(UserRole.CUSTOMER, UserRole.ADMIN), AuthController.disable2FA);
 
+// Forgot password flow
+router.post("/forgot-password", AuthController.forgotPassword);
+router.post("/verify-otp", AuthController.verifyOTP);
+router.post("/reset-password", AuthController.resetPassword);
+
 export const AuthRoutes: ExpressRouter = router;

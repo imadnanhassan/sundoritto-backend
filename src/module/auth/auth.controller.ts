@@ -141,6 +141,26 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.forgotPassword(req.body);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "OTP sent to your email",
+    data: result,
+  });
+});
+
+const verifyOTP = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.verifyOTP(req.body);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "OTP verified",
+    data: result,
+  });
+});
+
 export const AuthController = {
   loginUser,
   verify2FA,
@@ -151,4 +171,6 @@ export const AuthController = {
   enable2FA,
   disable2FA,
   resetPassword,
+  forgotPassword,
+  verifyOTP,
 };

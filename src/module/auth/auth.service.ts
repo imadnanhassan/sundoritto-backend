@@ -268,6 +268,62 @@ const changePassword = async (
   return { message: "Password changed successfully" };
 };
 
+const forgotPassword = async ({ email }: { email: string }) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+  if (!user.isActive) throw new AppError(StatusCodes.BAD_REQUEST, "User is not active");
+
+  const otp = generateOtp();
+  const otpToken = createToken({ otp, email } as any, process.env.jwt_otp_secret as string, "5m");
+
+  await User.updateOne({ email }, { otpToken });
+
+  try {
+    const { sendMail } = await import("../../config/mailer");
+    const { otpEmailHtml } = await import("../../utils/emailTemplates");
+    const lang = (process.env.DEFAULT_LANG as "en" | "bn") || "en";
+    await sendMail({
+      to: email,
+      subject: "Password reset verification code",
+      html: otpEmailHtml(user.name, String(otp), lang),
+      text: `Your password reset code: ${otp}`,
+    });
+  } catch {
+    await User.updateOne({ email }, { $unset: { otpToken: 1 } });
+    throw new AppError(StatusCodes.INTERNAL_SERVER_ERROR, "Failed to send OTP email");
+  }
+
+  return { message: "OTP sent to your email" };
+};
+
+const verifyOTP = async ({ email, otp }: { email: string; otp: string }) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+  if (!user.otpToken) throw new AppError(StatusCodes.BAD_REQUEST, "No OTP token found");
+
+  let decoded: any;
+  try {
+    decoded = verifyToken(user.otpToken as string, process.env.jwt_otp_secret as string);
+  } catch {
+    throw new AppError(StatusCodes.FORBIDDEN, "OTP has expired or is invalid");
+  }
+
+  if (String(decoded.otp) !== String(otp)) {
+    throw new AppError(StatusCodes.FORBIDDEN, "Invalid OTP");
+  }
+
+  // Clear otpToken
+  await User.updateOne({ email }, { $unset: { otpToken: 1 } });
+
+  const resetToken = createToken(
+    { email },
+    process.env.jwt_pass_reset_secret as string,
+    process.env.jwt_pass_reset_expires_in as string
+  );
+
+  return { resetToken };
+};
+
 const resetPassword = async ({
   token,
   newPassword,
@@ -314,6 +370,7 @@ export const AuthService = {
   verifyEmail,
   refreshToken,
   changePassword,
-
+  forgotPassword,
+  verifyOTP,
   resetPassword,
 };
