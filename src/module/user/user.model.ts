@@ -64,6 +64,38 @@ const userSchema = new Schema<IUser, UserModel>(
       type: String,
       default: null,
     },
+
+    // Email verification
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: {
+      type: String,
+      default: null,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      default: null,
+    },
+
+    // 2FA
+    is2FARequired: {
+      type: Boolean,
+      default: false,
+    },
+    twoFAEmail: {
+      type: String,
+      default: null,
+    },
+    twoFAToken: {
+      type: String,
+      default: null,
+    },
+    twoFAExpires: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
